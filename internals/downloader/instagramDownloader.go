@@ -3,10 +3,12 @@ package downloader
 import (
 	"encoding/json"
 	"fmt"
+	"html"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"sync"
 	"time"
 
@@ -93,10 +95,11 @@ func InstagramDownloader(url string) (*InstagramPost, string, error) {
 
 func SendFilesToTelegram(
 	instagramPost InstagramPost, chatID int64,
-	bot *tgbotapi.BotAPI, tempDir string, messageId, replyToMessageID int) {
+	bot *tgbotapi.BotAPI, tempDir string, messageId int, replyToMessage *tgbotapi.Message, url string) {
 
 	sendMutex.Lock()
 	defer sendMutex.Unlock()
+
 	var tgMedia []interface{}
 	for _, m := range instagramPost.Media {
 		if m.Type == "video" {
@@ -115,10 +118,24 @@ func SendFilesToTelegram(
 
 	}
 
-	bot.Send(tgbotapi.NewMessage(chatID, instagramPost.Caption))
+	msg := tgbotapi.NewMessage(chatID,
+		html.EscapeString(instagramPost.Caption)+
+			"\n\nSource: <a href=\""+url+"\">Instagram</a>"+
+			"\n\nSent by: <a href=\"tg://user?id="+strconv.FormatInt(replyToMessage.From.ID, 10)+"\">"+
+			html.EscapeString(replyToMessage.From.UserName)+
+			"</a>",
+	)
+
+	msg.ParseMode = tgbotapi.ModeHTML
+	msg.DisableWebPagePreview = true
+
+	bot.Send(msg)
 
 	del := tgbotapi.NewDeleteMessage(chatID, messageId)
 	bot.Request(del)
+
+	deluserLink := tgbotapi.NewDeleteMessage(chatID, replyToMessage.MessageID)
+	bot.Request(deluserLink)
 
 	os.RemoveAll(tempDir)
 }

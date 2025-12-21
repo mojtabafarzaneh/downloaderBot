@@ -159,7 +159,7 @@ func Start(bot *tgbotapi.BotAPI) {
 					return
 				}
 
-				downloader.SendFilesToTelegram(*instagramPost, chatID, bot, tempDir, msg.MessageID, update.Message.MessageID)
+				downloader.SendFilesToTelegram(*instagramPost, chatID, bot, tempDir, msg.MessageID, update.Message, url)
 
 			}(ProvidedUrl, chatID)
 		case
