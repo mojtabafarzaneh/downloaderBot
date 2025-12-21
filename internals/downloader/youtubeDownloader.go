@@ -62,21 +62,22 @@ func (yt YouTubeDownloader) GetFormats(url string) ([]FormatInfo, error) {
 		} else if res == "" {
 			res = "unknown"
 		}
-		if res == "256x144" {
+		switch res {
+		case "256x144":
 			res = "144p"
-		} else if res == "426x240" {
+		case "426x240":
 			res = "240p"
-		} else if res == "640x360" {
+		case "640x360":
 			res = "360p"
-		} else if res == "854x480" {
+		case "854x480":
 			res = "480p"
-		} else if res == "1280x720" {
+		case "1280x720":
 			res = "720p"
-		} else if res == "1920x1080" {
+		case "1920x1080":
 			res = "1080p"
-		} else if res == "2560x1440" {
+		case "2560x1440":
 			res = "1440p"
-		} else if res == "3840x2160" {
+		case "3840x2160":
 			res = "2160p"
 		}
 

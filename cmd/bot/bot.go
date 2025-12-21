@@ -19,6 +19,7 @@ func Start(bot *tgbotapi.BotAPI) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 	updates := bot.GetUpdatesChan(u)
+	// updates := bot.ListenForWebhook("/" + bot.Token)
 
 	for update := range updates {
 
@@ -36,7 +37,7 @@ func Start(bot *tgbotapi.BotAPI) {
 			edit := tgbotapi.EditMessageTextConfig{
 				BaseEdit: tgbotapi.BaseEdit{
 					ChatID:    chatID,
-					MessageID: mess, // the ID of the message to edit
+					MessageID: mess,
 				},
 				Text: "Downloading...",
 			}
@@ -122,32 +123,50 @@ func Start(bot *tgbotapi.BotAPI) {
 		switch {
 		case strings.Contains(url, "youtube.com") || strings.Contains(url, "youtu.be"):
 			dl = downloader.YouTubeDownloader{}
-		// case strings.Contains(url, "instagram.com"):
-		// 	dl = downloader.InstagramDownloader{}
+			formats, err := dl.GetFormats(url)
+			if err != nil || len(formats) == 0 {
+				bot.Send(tgbotapi.NewMessage(chatID, "Failed to fetch formats"))
+				continue
+			}
+
+			var buttons [][]tgbotapi.InlineKeyboardButton
+			for _, f := range formats {
+				data := fmt.Sprintf("%s|%s", f.FormatID, url)
+				btn := tgbotapi.NewInlineKeyboardButtonData(f.Display, data)
+				buttons = append(buttons, tgbotapi.NewInlineKeyboardRow(btn))
+			}
+			keyboard := tgbotapi.NewInlineKeyboardMarkup(buttons...)
+
+			msg := tgbotapi.NewMessage(chatID, "Choose a format:")
+			msg.ReplyMarkup = keyboard
+			bot.Send(msg)
+		case strings.Contains(url, "instagram.com"):
+
+			msg, _ := bot.Send(tgbotapi.MessageConfig{
+				BaseChat: tgbotapi.BaseChat{
+					ChatID:           chatID,
+					ReplyToMessageID: update.Message.MessageID,
+				},
+				Text: "Downloading files from Instagram",
+			})
+
+			go func(url string, chatID int64) {
+
+				instagramPost, tempDir, err := downloader.InstagramDownloader(url)
+				if err != nil {
+					bot.Send(tgbotapi.NewMessage(chatID, "Download failed"))
+					return
+				}
+
+				downloader.SendFilesToTelegram(*instagramPost, chatID, bot, tempDir, msg.MessageID, update.Message.MessageID)
+
+			}(url, chatID)
 		// case strings.Contains(url, "twitter.com") || strings.Contains(url, "t.co"):
 		// 	dl = downloader.TwitterDownloader{}
 		default:
-			bot.Send(tgbotapi.NewMessage(chatID, "Unsupported platform"))
 			continue
 		}
 
-		formats, err := dl.GetFormats(url)
-		if err != nil || len(formats) == 0 {
-			bot.Send(tgbotapi.NewMessage(chatID, "Failed to fetch formats"))
-			continue
-		}
-
-		var buttons [][]tgbotapi.InlineKeyboardButton
-		for _, f := range formats {
-			data := fmt.Sprintf("%s|%s", f.FormatID, url)
-			btn := tgbotapi.NewInlineKeyboardButtonData(f.Display, data)
-			buttons = append(buttons, tgbotapi.NewInlineKeyboardRow(btn))
-		}
-		keyboard := tgbotapi.NewInlineKeyboardMarkup(buttons...)
-
-		msg := tgbotapi.NewMessage(chatID, "Choose a format:")
-		msg.ReplyMarkup = keyboard
-		bot.Send(msg)
 	}
 }
 
