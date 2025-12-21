@@ -93,7 +93,7 @@ func (yt YouTubeDownloader) GetFormats(url string) ([]FormatInfo, error) {
 func (yt YouTubeDownloader) Download(url, formatID, outputPath string) error {
 	cmd := exec.Command(
 		"yt-dlp",
-		"--cookies-from-browser", "firefox",
+		// "--cookies-from-browser", "firefox",
 		"-f", formatID,
 		"-o", outputPath,
 		url,

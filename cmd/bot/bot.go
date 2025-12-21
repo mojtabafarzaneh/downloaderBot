@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"os/exec"
 	"regexp"
@@ -116,14 +117,14 @@ func Start(bot *tgbotapi.BotAPI) {
 			continue
 		}
 
-		url := update.Message.Text
+		ProvidedUrl := update.Message.Text
 		chatID := update.Message.Chat.ID
 
 		var dl downloader.Downloader
 		switch {
-		case strings.Contains(url, "youtube.com") || strings.Contains(url, "youtu.be"):
+		case strings.Contains(ProvidedUrl, "youtube.com") || strings.Contains(ProvidedUrl, "youtu.be"):
 			dl = downloader.YouTubeDownloader{}
-			formats, err := dl.GetFormats(url)
+			formats, err := dl.GetFormats(ProvidedUrl)
 			if err != nil || len(formats) == 0 {
 				bot.Send(tgbotapi.NewMessage(chatID, "Failed to fetch formats"))
 				continue
@@ -131,7 +132,7 @@ func Start(bot *tgbotapi.BotAPI) {
 
 			var buttons [][]tgbotapi.InlineKeyboardButton
 			for _, f := range formats {
-				data := fmt.Sprintf("%s|%s", f.FormatID, url)
+				data := fmt.Sprintf("%s|%s", f.FormatID, ProvidedUrl)
 				btn := tgbotapi.NewInlineKeyboardButtonData(f.Display, data)
 				buttons = append(buttons, tgbotapi.NewInlineKeyboardRow(btn))
 			}
@@ -140,7 +141,7 @@ func Start(bot *tgbotapi.BotAPI) {
 			msg := tgbotapi.NewMessage(chatID, "Choose a format:")
 			msg.ReplyMarkup = keyboard
 			bot.Send(msg)
-		case strings.Contains(url, "instagram.com"):
+		case strings.Contains(ProvidedUrl, "instagram.com"):
 
 			msg, _ := bot.Send(tgbotapi.MessageConfig{
 				BaseChat: tgbotapi.BaseChat{
@@ -160,9 +161,24 @@ func Start(bot *tgbotapi.BotAPI) {
 
 				downloader.SendFilesToTelegram(*instagramPost, chatID, bot, tempDir, msg.MessageID, update.Message.MessageID)
 
-			}(url, chatID)
-		// case strings.Contains(url, "twitter.com") || strings.Contains(url, "t.co"):
-		// 	dl = downloader.TwitterDownloader{}
+			}(ProvidedUrl, chatID)
+		case
+			strings.Contains(ProvidedUrl, "twitter.com") || strings.Contains(ProvidedUrl, "t.co") || strings.Contains(ProvidedUrl, "x.com"):
+			u, err := url.Parse(ProvidedUrl)
+			if err != nil {
+				fmt.Println("Invalid URL:", err)
+				continue
+			}
+
+			u.Host = "fxtwitter.com"
+			modifiedURL := u.String()
+			bot.Send(tgbotapi.MessageConfig{
+				BaseChat: tgbotapi.BaseChat{
+					ChatID:           chatID,
+					ReplyToMessageID: update.Message.MessageID,
+				},
+				Text: modifiedURL,
+			})
 		default:
 			continue
 		}

@@ -91,7 +91,10 @@ func InstagramDownloader(url string) (*InstagramPost, string, error) {
 
 }
 
-func SendFilesToTelegram(instagramPost InstagramPost, chatID int64, bot *tgbotapi.BotAPI, tempDir string, messageId int, userMessageId int) {
+func SendFilesToTelegram(
+	instagramPost InstagramPost, chatID int64,
+	bot *tgbotapi.BotAPI, tempDir string, messageId, replyToMessageID int) {
+
 	sendMutex.Lock()
 	defer sendMutex.Unlock()
 	var tgMedia []interface{}
@@ -116,9 +119,6 @@ func SendFilesToTelegram(instagramPost InstagramPost, chatID int64, bot *tgbotap
 
 	del := tgbotapi.NewDeleteMessage(chatID, messageId)
 	bot.Request(del)
-
-	delUserMessage := tgbotapi.NewDeleteMessage(chatID, userMessageId)
-	bot.Request(delUserMessage)
 
 	os.RemoveAll(tempDir)
 }
