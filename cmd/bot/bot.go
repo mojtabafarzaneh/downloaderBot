@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"net/url"
 	"os"
 	"os/exec"
@@ -57,9 +58,14 @@ func Start(bot *tgbotapi.BotAPI) {
 
 				tempFile := fmt.Sprintf("%s.mp4", formatID)
 
+				cookiesPath := os.Getenv("YTDLP_COOKIES")
+				if cookiesPath == "" {
+					log.Fatal("YTDLP_COOKIES not set")
+				}
+
 				cmd := exec.Command(
 					"yt-dlp",
-					"--cookies-from-browser", "firefox",
+					"--cookies", cookiesPath,
 					"-f", formatID,
 					"-o", tempFile,
 					downloadLink,
