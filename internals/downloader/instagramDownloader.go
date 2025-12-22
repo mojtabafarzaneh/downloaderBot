@@ -2,6 +2,7 @@ package downloader
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html"
 	"os"
@@ -33,9 +34,14 @@ func InstagramDownloader(url string) (*InstagramPost, string, error) {
 	if err := os.MkdirAll(tempDir, 0755); err != nil {
 		return nil, "", err
 	}
+
+	cookiesPath := os.Getenv("GALLERYDL_COOKIES")
+	if cookiesPath == "" {
+		return nil, "", errors.New("GALLERYDL_COOKIES not set")
+	}
 	cmd := exec.Command(
 		"gallery-dl",
-		"--cookies-from-browser", "firefox",
+		"--cookies", cookiesPath,
 		"-d", tempDir,
 		"--directory", "",
 		"-o", "%(playlist_index)s.%(ext)s",

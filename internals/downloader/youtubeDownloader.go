@@ -2,7 +2,9 @@ package downloader
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -10,9 +12,14 @@ import (
 type YouTubeDownloader struct{}
 
 func (yt YouTubeDownloader) GetFormats(url string) ([]FormatInfo, error) {
+
+	cookiesPath := os.Getenv("YTDLP_COOKIES")
+	if cookiesPath == "" {
+		return nil, errors.New("YTDLP_COOKIES not set")
+	}
 	cmd := exec.Command(
 		"yt-dlp",
-		"--cookies-from-browser", "firefox",
+		"--cookies", cookiesPath,
 		"-j",
 		url,
 	)

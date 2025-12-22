@@ -3,15 +3,22 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/joho/godotenv"
 	"github.com/mojtabafarzaneh/downloaderBot/cmd/bot"
 )
 
 func main() {
-	// Entry point for the bot application
 
-	var botKey = "8421057487:AAG30VyBpJ8yNOtlNavMWyivrFK-LwluOZ0"
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	var botKey = os.Getenv("BOTKEY")
+	if botKey == "" {
+		log.Fatal("BOTKEY not set")
+	}
 
 	fmt.Println("Bot is starting...")
 
