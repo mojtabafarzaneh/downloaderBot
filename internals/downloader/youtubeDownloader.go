@@ -98,9 +98,15 @@ func (yt YouTubeDownloader) GetFormats(url string) ([]FormatInfo, error) {
 	return formats, nil
 }
 func (yt YouTubeDownloader) Download(url, formatID, outputPath string) error {
+
+	cookiesPath := os.Getenv("YTDLP_COOKIES")
+	if cookiesPath == "" {
+		return errors.New("YTDLP_COOKIES not set")
+	}
+
 	cmd := exec.Command(
 		"yt-dlp",
-		// "--cookies-from-browser", "firefox",
+		"--cookies", cookiesPath,
 		"-f", formatID,
 		"-o", outputPath,
 		url,
