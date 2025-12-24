@@ -124,18 +124,36 @@ func SendFilesToTelegram(
 
 	}
 
-	msg := tgbotapi.NewMessage(chatID,
-		html.EscapeString(instagramPost.Caption)+
-			"\n\nSource: <a href=\""+url+"\">Instagram</a>"+
-			"\n\nSent by: <a href=\"tg://user?id="+strconv.FormatInt(replyToMessage.From.ID, 10)+"\">"+
-			html.EscapeString(replyToMessage.From.UserName)+
-			"</a>",
-	)
+	if replyToMessage.ReplyToMessage != nil {
+		msg := tgbotapi.NewMessage(chatID,
+			html.EscapeString(instagramPost.Caption)+
+				"\n\nSource: <a href=\""+url+"\">Instagram</a>"+
+				"\n\nSent by: <a href=\"tg://user?id="+strconv.FormatInt(replyToMessage.From.ID, 10)+"\">"+
+				html.EscapeString(replyToMessage.From.UserName)+
+				"</a>"+"\n\nIn reply to: <a href=\"tg://user?id="+strconv.FormatInt(replyToMessage.ReplyToMessage.From.ID, 10)+"\">"+
+				html.EscapeString(replyToMessage.ReplyToMessage.From.UserName)+
+				"</a>",
+		)
 
-	msg.ParseMode = tgbotapi.ModeHTML
-	msg.DisableWebPagePreview = true
+		msg.ParseMode = tgbotapi.ModeHTML
+		msg.DisableWebPagePreview = true
 
-	bot.Send(msg)
+		bot.Send(msg)
+
+	} else {
+		msg := tgbotapi.NewMessage(chatID,
+			html.EscapeString(instagramPost.Caption)+
+				"\n\nSource: <a href=\""+url+"\">Instagram</a>"+
+				"\n\nSent by: <a href=\"tg://user?id="+strconv.FormatInt(replyToMessage.From.ID, 10)+"\">"+
+				html.EscapeString(replyToMessage.From.UserName)+
+				"</a>",
+		)
+
+		msg.ParseMode = tgbotapi.ModeHTML
+		msg.DisableWebPagePreview = true
+
+		bot.Send(msg)
+	}
 
 	del := tgbotapi.NewDeleteMessage(chatID, messageId)
 	bot.Request(del)

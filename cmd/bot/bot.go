@@ -3,6 +3,7 @@ package bot
 import (
 	"bufio"
 	"fmt"
+	"html"
 	"io"
 	"log"
 	"net/url"
@@ -178,13 +179,19 @@ func Start(bot *tgbotapi.BotAPI) {
 
 			u.Host = "fxtwitter.com"
 			modifiedURL := u.String()
-			bot.Send(tgbotapi.MessageConfig{
-				BaseChat: tgbotapi.BaseChat{
-					ChatID:           chatID,
-					ReplyToMessageID: update.Message.MessageID,
-				},
-				Text: modifiedURL,
-			})
+
+			newMesg := tgbotapi.NewMessage(chatID,
+				"\n\nSource: <a href=\""+modifiedURL+"\">Twitter</a>"+
+					"\n\nSent by: <a href=\"tg://user?id="+strconv.FormatInt(update.Message.From.ID, 10)+"\">"+
+					html.EscapeString(update.Message.From.UserName)+
+					"</a>")
+
+			newMesg.ParseMode = tgbotapi.ModeHTML
+
+			bot.Send(newMesg)
+			deluserLink := tgbotapi.NewDeleteMessage(chatID, update.Message.MessageID)
+			bot.Request(deluserLink)
+
 		default:
 			continue
 		}
