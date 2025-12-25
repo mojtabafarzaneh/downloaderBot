@@ -195,7 +195,7 @@ func Start(bot *tgbotapi.BotAPI) {
 						"\n\nSent by: <a href=\"tg://user?id="+strconv.FormatInt(update.Message.From.ID, 10)+"\">"+
 						safeUser+
 						"</a>"+
-						"\n\nSent by: <a href=\"tg://user?id="+strconv.FormatInt(update.Message.ReplyToMessage.From.ID, 10)+"\">"+
+						"\n\nInReply To: <a href=\"tg://user?id="+strconv.FormatInt(update.Message.ReplyToMessage.From.ID, 10)+"\">"+
 						safeReplyUser+
 						"</a>",
 				)
