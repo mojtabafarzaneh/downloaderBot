@@ -3,7 +3,6 @@ package bot
 import (
 	"bufio"
 	"fmt"
-	"html"
 	"io"
 	"log"
 	"net/url"
@@ -179,18 +178,52 @@ func Start(bot *tgbotapi.BotAPI) {
 
 			u.Host = "fxtwitter.com"
 			modifiedURL := u.String()
+			if update.Message.ReplyToMessage != nil {
+				safeUser := strings.NewReplacer(
+					"&", "&amp;",
+					"<", "&lt;",
+					">", "&gt;",
+				).Replace(update.Message.From.UserName)
+				safeReplyUser := strings.NewReplacer(
+					"&", "&amp;",
+					"<", "&lt;",
+					">", "&gt;",
+				).Replace(update.Message.ReplyToMessage.From.UserName)
 
-			newMesg := tgbotapi.NewMessage(chatID,
-				"\n\nSource: <a href=\""+modifiedURL+"\">Twitter</a>"+
-					"\n\nSent by: <a href=\"tg://user?id="+strconv.FormatInt(update.Message.From.ID, 10)+"\">"+
-					html.EscapeString(update.Message.From.UserName)+
-					"</a>")
+				newMesg := tgbotapi.NewMessage(chatID,
+					"\n\nSource: <a href=\""+modifiedURL+"\">Twitter</a>"+
+						"\n\nSent by: <a href=\"tg://user?id="+strconv.FormatInt(update.Message.From.ID, 10)+"\">"+
+						safeUser+
+						"</a>"+
+						"\n\nSent by: <a href=\"tg://user?id="+strconv.FormatInt(update.Message.ReplyToMessage.From.ID, 10)+"\">"+
+						safeReplyUser+
+						"</a>",
+				)
+				newMesg.ParseMode = tgbotapi.ModeHTML
 
-			newMesg.ParseMode = tgbotapi.ModeHTML
+				bot.Send(newMesg)
+				deluserLink := tgbotapi.NewDeleteMessage(chatID, update.Message.MessageID)
+				bot.Request(deluserLink)
 
-			bot.Send(newMesg)
-			deluserLink := tgbotapi.NewDeleteMessage(chatID, update.Message.MessageID)
-			bot.Request(deluserLink)
+			} else {
+				safeUser := strings.NewReplacer(
+					"&", "&amp;",
+					"<", "&lt;",
+					">", "&gt;",
+				).Replace(update.Message.From.UserName)
+
+				newMesg := tgbotapi.NewMessage(chatID,
+					"\n\nSource: <a href=\""+modifiedURL+"\">Twitter</a>"+
+						"\n\nSent by: <a href=\"tg://user?id="+strconv.FormatInt(update.Message.From.ID, 10)+"\">"+
+						safeUser+
+						"</a>",
+				)
+				newMesg.ParseMode = tgbotapi.ModeHTML
+
+				bot.Send(newMesg)
+				deluserLink := tgbotapi.NewDeleteMessage(chatID, update.Message.MessageID)
+				bot.Request(deluserLink)
+			}
 
 		default:
 			continue
