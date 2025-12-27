@@ -17,6 +17,12 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+type progressReader struct {
+	Reader   io.Reader
+	total    int64
+	read     int64
+	callback func(percent int)
+}
 type Format struct {
 	FormatID   string   `json:"format_id"`
 	Ext        string   `json:"ext"`
@@ -208,13 +214,6 @@ func parsePercentage(line string) int {
 	}
 
 	return int(percent)
-}
-
-type progressReader struct {
-	Reader   io.Reader
-	total    int64
-	read     int64
-	callback func(percent int)
 }
 
 func (pr *progressReader) Read(p []byte) (n int, err error) {
