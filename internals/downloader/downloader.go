@@ -20,8 +20,3 @@ type FormatInfo struct {
 	Display    string
 	FilesizeMB string
 }
-
-type Downloader interface {
-	GetFormats(url string) ([]FormatInfo, error)
-	Download(url, formatID, outputPath string) error
-}

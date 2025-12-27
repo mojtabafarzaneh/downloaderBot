@@ -29,6 +29,8 @@ go.work.sum
 .vscode
 __debug_*
 
+instagramcookies.txt
+youtubecoockies.txt
 # Editor/IDE
 # .idea/
 # .vscode/
