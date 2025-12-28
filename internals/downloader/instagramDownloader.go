@@ -199,51 +199,36 @@ func convertVideos(videoPath string) error {
 		return fmt.Errorf("input file does not exist: %s", videoPath)
 	}
 
-	encoders := []string{
-		"libx264",
-		"libopenh264",
-		"h264_vaapi",
-		"h264_qsv",
-		"h264_nvenc",
-		"h264_v4l2m2m",
-	}
+	cmd := exec.Command(
+		"ffmpeg",
+		"-i", videoPath,
+		"-c:v", "libx264",
+		"-preset", "fast",
+		"-crf", "23",
+		"-c:a", "aac",
+		"-b:a", "128k",
+		"-movflags", "+faststart",
+		"-pix_fmt", "yuv420p",
+		"-y",
+		tempOutput,
+	)
 
-	var lastErr error
-	for _, encoder := range encoders {
-		cmd := exec.Command(
-			"ffmpeg",
-			"-i", videoPath,
-			"-c:v", encoder,
-			"-b:v", "2M",
-			"-c:a", "aac",
-			"-b:a", "128k",
-			"-movflags", "+faststart",
-			"-pix_fmt", "yuv420p",
-			"-y",
-			tempOutput,
-		)
-
-		output, err := cmd.CombinedOutput()
-		if err == nil {
-			// Success!
-			if err := os.Rename(tempOutput, videoPath); err != nil {
-				os.Remove(tempOutput)
-				return fmt.Errorf("failed to replace original: %v", err)
-			}
-			log.Printf("Converted video using encoder: %s", encoder)
-			return nil
-		}
-
-		lastErr = err
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("FFMPEG ERROR:\n%s\n", string(output))
 		os.Remove(tempOutput)
-
-		// If it's not an "unknown encoder" error, stop trying
-		if !strings.Contains(string(output), "Unknown encoder") &&
-			!strings.Contains(string(output), "Encoder not found") {
-			log.Printf("FFMPEG ERROR with %s:\n%s\n", encoder, string(output))
-			return fmt.Errorf("ffmpeg failed: %v", err)
-		}
+		return fmt.Errorf("ffmpeg failed: %v", err)
 	}
 
-	return fmt.Errorf("no compatible H.264 encoder found, last error: %v", lastErr)
+	if _, err := os.Stat(tempOutput); os.IsNotExist(err) {
+		return fmt.Errorf("ffmpeg did not create output file")
+	}
+
+	if err := os.Rename(tempOutput, videoPath); err != nil {
+		os.Remove(tempOutput)
+		return fmt.Errorf("failed to replace original: %v", err)
+	}
+
+	return nil
+
 }
