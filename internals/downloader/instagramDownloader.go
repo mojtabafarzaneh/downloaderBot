@@ -5,11 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"html"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -92,6 +94,19 @@ func InstagramDownloader(url string) (*InstagramPost, string, error) {
 			}
 		}
 	}
+	vidoeFiles, err := filepath.Glob(filepath.Join(tempDir, "*"))
+	if err != nil {
+		return nil, "", err
+	}
+	for _, file := range vidoeFiles {
+		ext := strings.ToLower(filepath.Ext(file))
+		if ext == ".mp4" || ext == ".mov" {
+			if err := convertVideos(file); err != nil {
+				log.Printf("Warning: failed to convert %s: %v", file, err)
+			}
+		}
+	}
+
 	return &InstagramPost{
 		Caption: caption,
 		Media:   media,
@@ -175,4 +190,45 @@ func randString(n int) string {
 
 func randInt(max int) int {
 	return int(os.Getpid() * int(os.Getuid()) % max)
+}
+
+func convertVideos(videoPath string) error {
+	tempOutput := videoPath + ".tmp.mp4"
+
+	// Check if input file exists
+	if _, err := os.Stat(videoPath); os.IsNotExist(err) {
+		return fmt.Errorf("input file does not exist: %s", videoPath)
+	}
+
+	cmd := exec.Command(
+		"ffmpeg",
+		"-i", videoPath,
+		"-c:v", "libopenh264",
+		"-preset", "fast",
+		"-crf", "23",
+		"-c:a", "aac",
+		"-b:a", "128k",
+		"-movflags", "+faststart",
+		"-pix_fmt", "yuv420p",
+		"-y",
+		tempOutput,
+	)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Printf("FFMPEG FULL OUTPUT:\n%s\n", string(output))
+		os.Remove(tempOutput)
+		return fmt.Errorf("ffmpeg failed: %v", err)
+	}
+
+	if _, err := os.Stat(tempOutput); os.IsNotExist(err) {
+		return fmt.Errorf("ffmpeg did not create output file")
+	}
+
+	if err := os.Rename(tempOutput, videoPath); err != nil {
+		os.Remove(tempOutput)
+		return fmt.Errorf("failed to replace original: %v", err)
+	}
+
+	return nil
 }
