@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -48,6 +47,10 @@ func InstagramDownloader(url string) (*InstagramPost, string, error) {
 		"--directory", "",
 		"-o", "%(playlist_index)s.%(ext)s",
 		"--write-metadata",
+		"--retries", "3",
+		"--sleep-request", "2.0",
+		"-o", "downloader.ytdl.enabled=true",
+		"-o", "downloader.ytdl.format=bestvideo[vcodec^=avc1][ext=mp4]+bestaudio[acodec^=mp4a]/best[vcodec^=avc1][ext=mp4]/best",
 		url,
 	)
 
@@ -94,18 +97,18 @@ func InstagramDownloader(url string) (*InstagramPost, string, error) {
 			}
 		}
 	}
-	vidoeFiles, err := filepath.Glob(filepath.Join(tempDir, "*"))
-	if err != nil {
-		return nil, "", err
-	}
-	for _, file := range vidoeFiles {
-		ext := strings.ToLower(filepath.Ext(file))
-		if ext == ".mp4" || ext == ".mov" {
-			if err := convertVideos(file); err != nil {
-				log.Printf("Warning: failed to convert %s: %v", file, err)
-			}
-		}
-	}
+	// vidoeFiles, err := filepath.Glob(filepath.Join(tempDir, "*"))
+	// if err != nil {
+	// 	return nil, "", err
+	// }
+	// for _, file := range vidoeFiles {
+	// 	ext := strings.ToLower(filepath.Ext(file))
+	// 	if ext == ".mp4" || ext == ".mov" {
+	// 		if err := convertVideos(file); err != nil {
+	// 			log.Printf("Warning: failed to convert %s: %v", file, err)
+	// 		}
+	// 	}
+	// }
 
 	return &InstagramPost{
 		Caption: caption,
