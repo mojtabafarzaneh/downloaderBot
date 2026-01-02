@@ -1,10 +1,14 @@
 # Netscape HTTP Cookie File
+# https://curl.haxx.se/rfc/cookie_spec.html
+# This is a generated file! Do not edit.
 
 .instagram.com	TRUE	/	TRUE	1800854324	datr	NINHabnYZfMAn1i-AaRi3fC4
 .instagram.com	TRUE	/	TRUE	1797830324	ig_did	7F98DB0A-9423-470D-9B3A-131BAB8AF4F2
-.instagram.com	TRUE	/	TRUE	1767931030	wd	1920x805
+.instagram.com	TRUE	/	TRUE	1768000246	wd	1920x805
 .instagram.com	TRUE	/	TRUE	1800854326	mid	aUeDNAAEAAGZ9I5Yjnx3uaNFAVq8
-.instagram.com	TRUE	/	TRUE	0	rur	"RVA\05441975964633\0541798863795:01fedc05ed9edd398d6db3065ac06c0bfd893265e45c61672764604878fc79763901d983"
-.instagram.com	TRUE	/	TRUE	1801887795	csrftoken	b0db2b99545f7775ffeb60f7994d2bb8
-.instagram.com	TRUE	/	TRUE	1775103795	ds_user_id	41975964633
-.instagram.com	TRUE	/	TRUE	1798862216	sessionid	41975964633%3A4f6pv7fGqenxll%3A18%3AAYhzIUKdJjRdXngIN2F5XSLnDjg1tHrKoZfl_30Hag
+.instagram.com	TRUE	/	TRUE	1801955448	csrftoken	Y7IOJhZU7Firyf84zKFIcSq3CIWiJsJn
+.instagram.com	TRUE	/	TRUE	1775171448	ds_user_id	50724376400
+.instagram.com	TRUE	/	TRUE	1801955199	ps_l	1
+.instagram.com	TRUE	/	TRUE	1801955199	ps_n	1
+.instagram.com	TRUE	/	TRUE	1798931443	sessionid	50724376400%3A9gL2Fj8pfnAcQo%3A21%3AAYjc9fhEQkuNT3XFXTrtoYzHZn01MWtNrvchNCV3Ig
+.instagram.com	TRUE	/	TRUE	0	rur	"RVA\05450724376400\0541798931448:01feebc8a12759d9045b04b16d493f3b0f21da21cb52275549c223d8a7186f0fff6e0241"
