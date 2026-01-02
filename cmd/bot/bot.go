@@ -2,6 +2,7 @@ package bot
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -79,6 +80,8 @@ func Start(bot *tgbotapi.BotAPI) {
 				instagramPost, tempDir, err := downloader.InstagramDownloader(url)
 				if err != nil {
 					bot.Send(tgbotapi.NewMessage(chatID, "Download failed"))
+					log.Printf("gallery-dl error: %v", err)
+
 					return
 				}
 

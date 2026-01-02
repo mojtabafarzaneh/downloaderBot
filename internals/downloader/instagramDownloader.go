@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"html"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -55,7 +54,6 @@ func InstagramDownloader(url string) (*InstagramPost, string, error) {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Fatalf("gallery-dl error: %v, output: %s", err, string(output))
 		return nil, "", fmt.Errorf("gallery-dl error: %v, output: %s", err, string(output))
 	}
 
