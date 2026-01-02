@@ -49,13 +49,13 @@ func InstagramDownloader(url string) (*InstagramPost, string, error) {
 		"--write-metadata",
 		"--retries", "3",
 		"--sleep-request", "2.0",
-		"-o", "downloader.ytdl.enabled=true",
-		"-o", "downloader.ytdl.format=bestvideo[vcodec^=avc1][ext=mp4]+bestaudio[acodec^=mp4a]/best[vcodec^=avc1][ext=mp4]/best",
+		"-o", "postprocessor.exec.command=ffmpeg -i {} -c:v libx265 -crf 30 -preset medium -vf scale=720:-2 -c:a aac -b:a 64k -movflags +faststart -tag:v hvc1 -y {}.tmp.mp4 && mv {}.tmp.mp4 {}", "-o", "postprocessor.exec.event=after",
 		url,
 	)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
+		log.Fatalf("gallery-dl error: %v, output: %s", err, string(output))
 		return nil, "", fmt.Errorf("gallery-dl error: %v, output: %s", err, string(output))
 	}
 
@@ -97,18 +97,6 @@ func InstagramDownloader(url string) (*InstagramPost, string, error) {
 			}
 		}
 	}
-	// vidoeFiles, err := filepath.Glob(filepath.Join(tempDir, "*"))
-	// if err != nil {
-	// 	return nil, "", err
-	// }
-	// for _, file := range vidoeFiles {
-	// 	ext := strings.ToLower(filepath.Ext(file))
-	// 	if ext == ".mp4" || ext == ".mov" {
-	// 		if err := convertVideos(file); err != nil {
-	// 			log.Printf("Warning: failed to convert %s: %v", file, err)
-	// 		}
-	// 	}
-	// }
 
 	return &InstagramPost{
 		Caption: caption,
@@ -193,45 +181,4 @@ func randString(n int) string {
 
 func randInt(max int) int {
 	return int(os.Getpid() * int(os.Getuid()) % max)
-}
-
-func convertVideos(videoPath string) error {
-	tempOutput := videoPath + ".tmp.mp4"
-
-	if _, err := os.Stat(videoPath); os.IsNotExist(err) {
-		return fmt.Errorf("input file does not exist: %s", videoPath)
-	}
-
-	cmd := exec.Command(
-		"ffmpeg",
-		"-i", videoPath,
-		"-c:v", "libx264",
-		"-preset", "fast",
-		"-crf", "23",
-		"-c:a", "aac",
-		"-b:a", "128k",
-		"-movflags", "+faststart",
-		"-pix_fmt", "yuv420p",
-		"-y",
-		tempOutput,
-	)
-
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Printf("FFMPEG ERROR:\n%s\n", string(output))
-		os.Remove(tempOutput)
-		return fmt.Errorf("ffmpeg failed: %v", err)
-	}
-
-	if _, err := os.Stat(tempOutput); os.IsNotExist(err) {
-		return fmt.Errorf("ffmpeg did not create output file")
-	}
-
-	if err := os.Rename(tempOutput, videoPath); err != nil {
-		os.Remove(tempOutput)
-		return fmt.Errorf("failed to replace original: %v", err)
-	}
-
-	return nil
-
 }

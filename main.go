@@ -28,7 +28,7 @@ func main() {
 	}
 
 	b.Debug = true
-
+	//b.SetAPIEndpoint("http://localhost:8081/bot%s/%s")
 	log.Printf("Authorized as %s", b.Self.UserName)
 
 	bot.Start(b)
