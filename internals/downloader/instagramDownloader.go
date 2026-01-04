@@ -48,7 +48,8 @@ func InstagramDownloader(url string) (*InstagramPost, string, error) {
 		"--write-metadata",
 		"--retries", "3",
 		"--sleep-request", "2.0",
-		"-o", "postprocessor.exec.command=ffmpeg -i {} -c:v libx265 -crf 30 -preset medium -vf scale=720:-2 -c:a aac -b:a 64k -movflags +faststart -tag:v hvc1 -y {}.tmp.mp4 && mv {}.tmp.mp4 {}", "-o", "postprocessor.exec.event=after",
+		"-o", "downloader.ytdl.enabled=true",
+		"-o", "downloader.ytdl.format=bestvideo[vcodec^=avc1][ext=mp4]+bestaudio[acodec^=mp4a]/best[vcodec^=avc1][ext=mp4]/best",
 		url,
 	)
 
