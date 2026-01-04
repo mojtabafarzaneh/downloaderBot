@@ -144,6 +144,23 @@ func Start(bot *tgbotapi.BotAPI) {
 				deluserLink := tgbotapi.NewDeleteMessage(chatID, update.Message.MessageID)
 				bot.Request(deluserLink)
 			}
+		case strings.Contains(ProvidedUrl, "tiktok.com") || strings.Contains(ProvidedUrl, "vt.tiktok.com"):
+			msg, _ := bot.Send(tgbotapi.MessageConfig{
+				BaseChat: tgbotapi.BaseChat{
+					ChatID:           chatID,
+					ReplyToMessageID: update.Message.MessageID,
+				},
+				Text: "Downloading files from TikTok",
+			})
+			go func(url string, chatID int64) {
+				tiktokPost, tempDir, err := downloader.TikTokDownloader(url)
+				if err != nil {
+					bot.Send(tgbotapi.NewMessage(chatID, "Download failed"))
+					log.Printf("gallery-dl error: %v", err)
+					return
+				}
+				downloader.SendTikTokToTelegram(*tiktokPost, chatID, bot, tempDir, msg.MessageID, update.Message, url)
+			}(ProvidedUrl, chatID)
 
 		default:
 			continue
